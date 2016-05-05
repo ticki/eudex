@@ -147,6 +147,8 @@ mod tests {
         assert!(similar("", ""));
         assert!(similar("jumpo", "jumbo"));
         assert!(similar("lol", "lulz"));
+        assert!(similar("maier", "meyer"));
+        assert!(similar("smith", "schmidt"));
 
         // Not similar.
         assert!(!similar("youtube", "reddit"));
@@ -164,7 +166,9 @@ mod tests {
         use std::io::{BufRead, BufReader};
 
         b.iter(|| {
-            let dict = fs::File::open("/usr/share/dict/american-english").unwrap();
+            let dict = fs::File::open("/usr/share/dict/american-english").unwrap_or_else(|_| {
+                fs::File::open("/usr/share/dict/words").unwrap()
+            });
             let mut vec = Vec::new();
 
             for i in BufReader::new(dict).lines() {
