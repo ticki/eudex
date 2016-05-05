@@ -1,3 +1,6 @@
+//! Eudex is a Soundex-esque phonetic reduction/hashing algorithm, providing locality sensitive
+//! "hashes" of words, based on the spelling and pronunciation.
+
 #![cfg_attr(test, feature(test))]
 #[cfg(test)]
 extern crate test;
@@ -49,7 +52,7 @@ const PHONES: [u64; LETTERS as usize] = [
 ];
 const LETTERS: u8 =  26;
 
-/// Phonetically, hash this string.
+/// Phonetically hash this string.
 ///
 /// This hashing function is based upon a phonetic reduction algorithm, and is locality sensitive.
 ///
@@ -61,10 +64,9 @@ const LETTERS: u8 =  26;
 /// than Levenshtein distance, making it feasible to run on large sets of strings in very short
 /// time.
 ///
-/// It is optimized for European languages as well.
-///
 /// A word containing too many non-duplicate consonants will overflow and possibly cause
-/// unspecified behavior, although observations shows that it affect the result relatively little.
+/// unspecified behavior, although observations shows that it affect the end result relatively
+/// little.
 ///
 /// Each byte in the string will be mapped to a value from a table, such that similarly sounding
 /// characters have many overlapping bits. This way you ensure that strings sounding alike will be
