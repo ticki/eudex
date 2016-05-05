@@ -17,11 +17,11 @@ extern crate test;
 /// | 4        | 8        | Approximant | vrhjwc   |
 /// | 5        | 16       | Trill       | r        |
 /// | 6        | 32       | Lateral     | l        |
-/// | 7        | 64       | Type²       | mpbfv    |
-/// | 8        | 128      | Confident¹  | lrxzq    |
+/// | 7        | 64       | Type¹       | mpbfv    |
+/// | 8        | 128      | Confident²  | lrxzq    |
 ///
-/// ¹hard to misspell.
-/// ²1 means labial or dorsal, 0 means apical.
+/// ¹1 means labial or dorsal, 0 means apical.
+/// ²hard to misspell.
 const PHONES: [u64; LETTERS as usize] = [
     0, // a
     0b01000010, // b
@@ -50,6 +50,7 @@ const PHONES: [u64; LETTERS as usize] = [
     0, // y
     0b10000100, // z
 ];
+/// Number of letters in our phone map.
 const LETTERS: u8 =  26;
 
 /// Phonetically hash this string.
