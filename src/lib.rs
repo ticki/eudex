@@ -9,46 +9,45 @@ extern crate test;
 ///
 /// The first bit each describes a certain property of the phone:
 ///
-/// | Position | Modifier | Property    | Phones   |
-/// |----------|----------|-------------|----------|
-/// | 1        | 1        | Nasal       | mn       |
-/// | 2        | 2        | Plosive     | pbtdcgqk |
-/// | 3        | 4        | Fricative   | fvsjxzhc |
-/// | 4        | 8        | Approximant | vrhjwc   |
-/// | 5        | 16       | Trill       | r        |
-/// | 6        | 32       | Lateral     | l        |
-/// | 7        | 64       | Type¹       | mpbfv    |
-/// | 8        | 128      | Confident²  | lrxzq    |
+/// | Position | Modifier | Property     | Phones                   |
+/// |----------|----------|--------------|--------------------------|
+/// | 1        | 1        | Discriminant | (for tagging duplicates) |
+/// | 2        | 2        | Fricative    | fvsjxzhct                |
+/// | 3        | 4        | Nasal        | mn                       |
+/// | 4        | 8        | Plosive      | pbtdcgqk                 |
+/// | 5        | 16       | Dental       | tdnzs                    |
+/// | 6        | 32       | Liquid       | lr                       |
+/// | 7        | 64       | Labial       | bfpv                     |
+/// | 8        | 128      | Confident¹   | lrxzq                    |
 ///
-/// ¹1 means labial or dorsal, 0 means apical.
-/// ²hard to misspell.
+/// ¹hard to misspell.
 const PHONES: [u64; LETTERS as usize] = [
     0, // a
-    0b01000010, // b
-    0b00001110, // c
-    0b00000010, // d
+    0b01001000, // b
+    0b00001010, // c
+    0b00011000, // d
     0, // e
-    0b01000100, // f
-    0b00000010, // g
-    0b00001100, // h
+    0b01000010, // f
+    0b00001000, // g
+    0b00000010, // h
     0, // i
-    0b00001100, // j
-    0b00000010, // k
+    0b00000011, // j
+    0b00001001, // k
     0b10100000, // l
-    0b01000001, // m
-    0b00000001, // n
+    0b00000100, // m
+    0b00010100, // n
     0, // o
-    0b01000010, // p
-    0b10000010, // q
-    0b10011000, // r
-    0b00000100, // s
-    0b00000010, // t
+    0b01001001, // p
+    0b10101000, // q
+    0b10100001, // r
+    0b00010010, // s
+    0b00011011, // t
     0, // u
-    0b01001100, // v
-    0b00001000, // w
-    0b10000100, // x
+    0b01000011, // v
+    0b00000000, // w
+    0b10000010, // x
     0, // y
-    0b10000100, // z
+    0b10010010, // z
 ];
 /// Number of letters in our phone map.
 const LETTERS: u8 =  26;
@@ -121,7 +120,7 @@ fn phone(b: u8) -> u64 {
 /// let distance = eudex::distance("write", "right").count_ones();
 /// // Hamming weight of the Eudex distance gives a "smoother" word metric.
 ///
-/// assert_eq!(distance, 6);
+/// assert_eq!(distance, 10);
 /// ```
 pub fn distance(a: &str, b: &str) -> u64 {
     hash(a) ^ hash(b)
