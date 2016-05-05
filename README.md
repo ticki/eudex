@@ -3,7 +3,9 @@
 Eudex is a Soundex-esque phonetic reduction/hashing algorithm, providing
 locality sensitive "hashes" of words, based on the spelling and pronunciation.
 
-This is about two orders of magnitude faster than Soundex, and several orders
+It is derived from the classification of the pulmonic consonants.
+
+Eudex is about two orders of magnitude faster than Soundex, and several orders
 of magnitude faster than Levenshtein distance, making it feasible to run on
 large sets of strings in very short time.
 

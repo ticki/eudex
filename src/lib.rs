@@ -19,7 +19,7 @@ extern crate test;
 ///
 /// ¹hard to misspell.
 /// ²1 means labial or dorsal, 0 means apical.
-const MAP: [u64; 26] = [
+const PHONES: [u64; LETTERS as usize] = [
     0, // a
     0b01000010, // b
     0b00001110, // c
@@ -47,6 +47,7 @@ const MAP: [u64; 26] = [
     0, // y
     0b10000100, // z
 ];
+const LETTERS: u8 =  26;
 
 /// Phonetically, hash this string.
 ///
@@ -75,19 +76,33 @@ const MAP: [u64; 26] = [
 /// Case has no effect.
 pub fn hash(s: &str) -> u64 {
     let mut bytes = s.bytes();
-    let first_byte = bytes.next().map_or(0, |x| (x | 32) as u64);
+    let first_byte = bytes.next().map_or(0, |x| {
+        let phone = phone(x);
+        if phone == 0 { x as u64 } else { phone }
+    });
     let mut res = 0;
 
     for i in bytes {
-        if let Some(&x) =  MAP.get(((i | 32).wrapping_sub(b'a')) as usize) {
-            if x != 0 && res & 255 != x {
-                res <<= 8;
-                res |= x;
-            }
+        let x = phone(i);
+        if x != 0 && res & 255 != x {
+            res <<= 8;
+            res |= x;
         }
     }
 
     res | (first_byte << 56)
+}
+
+/// Get the "sound" of this character.
+///
+/// This is designed such that similar sounding characters will have a low XOR. Vowels or skipgrams
+/// will return 0.
+#[inline(always)]
+fn phone(b: u8) -> u64 {
+    let entry = (b | 32).wrapping_sub(b'a');
+    if entry < LETTERS {
+        PHONES[entry as usize]
+    } else { 0 }
 }
 
 /// Calculate the Eudex distance between two words.
@@ -96,6 +111,15 @@ pub fn hash(s: &str) -> u64 {
 /// metric, making it unfit for certain purposes.  Generally speaking, the lower this is, the more
 /// similar are the two words, although each byte carries different weight (the first one carries
 /// the most, and the following's weights are simply half the weight of the previous byte).
+///
+/// # Example
+///
+/// ```rust
+/// let distance = eudex::distance("write", "right").count_ones();
+/// // Hamming weight of the Eudex distance gives a "smoother" word metric.
+///
+/// assert_eq!(distance, 6);
+/// ```
 pub fn distance(a: &str, b: &str) -> u64 {
     hash(a) ^ hash(b)
 }
@@ -130,14 +154,16 @@ mod tests {
         assert!(hash("lol") != hash("lulz"));
         assert!(hash("ijava") != hash("java"));
         assert!(hash("jesus") != hash("iesus"));
+        assert!(hash("aesus") != hash("iesus"));
     }
 
     #[test]
     fn test_distance() {
         assert!(distance("lizzard", "wizzard") > distance("rick", "rolled"));
-        assert!(distance("bannana", "panana") > distance("apple", "abple"));
+        assert!(distance("bannana", "panana") >= distance("apple", "abple"));
         //assert!(distance("franco", "sranco") < distance("unicode", "ASCII"));
         assert!(distance("trump", "drumpf") < distance("gangam", "style"));
+        assert!(distance("right", "write").count_zeros() > distance("write", "abdominohysterotomy").count_zeros());
     }
 
     #[test]
