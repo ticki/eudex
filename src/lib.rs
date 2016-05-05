@@ -68,7 +68,7 @@ pub fn hash(s: &str) -> u64 {
 
     for i in bytes {
         if let Some(&x) =  MAP.get(((i | 32).wrapping_sub(b'a')) as usize) {
-            if x != 0 && (res ^ x) & 3 < 2 {
+            if x != 0 && res & 255 != x {
                 res <<= 8;
                 res |= x;
             }
@@ -90,7 +90,7 @@ pub fn distance(a: &str, b: &str) -> u64 {
 
 /// Check if two sentences sound "similar".
 pub fn similar(a: &str, b: &str) -> bool {
-    distance(a, b) < 300
+    distance(a, b) < 670000
 }
 
 #[cfg(test)]
@@ -101,8 +101,8 @@ mod tests {
     #[test]
     fn test_exact() {
         assert_eq!(hash("lal"), hash("lel"));
-        assert_eq!(hash("crakke"), hash("crake"));
         assert_eq!(hash("rupert"), hash("ropert"));
+        assert_eq!(hash("rrr"), hash("rraaaa"));
         assert_eq!(hash("random"), hash("rondom"));
         assert_eq!(hash("java"), hash("jiva"));
         assert_eq!(hash("JAva"), hash("jAva"));
@@ -110,7 +110,6 @@ mod tests {
         assert_eq!(hash("comp-uter"), hash("computer"));
         assert_eq!(hash("comp@u#te?r"), hash("computer"));
         assert_eq!(hash("c0mp^tər"), hash("computer"));
-        assert_eq!(hash("burn"), hash("brund"));
     }
 
     #[test]
@@ -147,9 +146,12 @@ mod tests {
         assert!(similar("", ""));
         assert!(similar("jumpo", "jumbo"));
         assert!(similar("lol", "lulz"));
+        assert!(similar("burn", "brund"));
+        assert!(similar("goth", "god"));
 
         // Not similar.
         assert!(!similar("youtube", "reddit"));
+        assert!(!similar("yet", "vet"));
         assert!(!similar("hacker", "4chan"));
         assert!(!similar("awesome", "me"));
         assert!(!similar("prisco", "vkisco"));
