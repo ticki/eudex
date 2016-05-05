@@ -22,6 +22,6 @@ fn main() {
 Add this to your `Cargo.toml`:
 
 ```toml
-[dependency.eudex]
+[dependencies.eudex]
 git = "https://github.com/ticki/eudex.git"
 ```
