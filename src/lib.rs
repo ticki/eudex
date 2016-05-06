@@ -22,39 +22,39 @@ extern crate test;
 ///
 /// ¹hard to misspell.
 ///
-/// Vowels are, to maxize the XOR distance, represented by 0 and 1 (open and closed, respectively).
+/// Vowels are, to maxize the XOR distance, represented by 0 and 1 (open and close, respectively).
 const PHONES: [u64; LETTERS as usize] = [
     0, // a
     0b01001000, // b
     0b00001100, // c
     0b00011000, // d
-    0, // e 
+    0, // e
     0b01000100, // f
     0b00001000, // g
     0b00000100, // h
-    1, // i 
+    1, // i
     0b00000101, // j
     0b00001001, // k
     0b10100000, // l
     0b00000010, // m
     0b00010010, // n
-    0, // o 
+    0, // o
     0b01001001, // p
     0b10101000, // q
     0b10100001, // r
     0b00010100, // s
     0b00011101, // t
-    1, // u 
+    1, // u
     0b01000101, // v
     0b00000000, // w
     0b10000100, // x
-    1, // y 
+    1, // y
     0b10010100, // z
 ];
 
 /// An _injective_ phone table.
 ///
-/// The first bit (MSD) is set if it is a vowel. If so, the second bit represent, if it is closed
+/// The first bit (MSD) is set if it is a vowel. If so, the second bit represent, if it is close
 /// or not, and the third is set, if it is a front vowel. The rest of the digits are used as
 /// discriminants.
 ///
@@ -65,27 +65,27 @@ const INJECTIVE_PHONES: [u64; LETTERS as usize] = [
     0b00100100, // b
     0b00000110, // c
     0b00001100, // d
-    0b11100001, // e 
+    0b11100001, // e
     0b00100010, // f
     0b00000100, // g
     0b00000010, // h
-    0b11000000, // i 
+    0b11000000, // i
     0b00000011, // j
     0b00000101, // k
     0b01010000, // l
     0b00000001, // m
     0b00001001, // n
-    0b10100000, // o 
+    0b10100000, // o
     0b00100101, // p
     0b01010100, // q
     0b01010001, // r
     0b00001010, // s
     0b00001110, // t
-    0b11000001, // u 
+    0b11000001, // u
     0b00100011, // v
     0b00000000, // w
     0b01000010, // x
-    0b11100010, // y 
+    0b11100010, // y
     0b01001010, // z
 ];
 
@@ -123,17 +123,19 @@ pub fn hash(s: &str) -> u64 {
     let mut res = 0;
 
     for b in bytes {
-        let x = {
-            let entry = (b | 32).wrapping_sub(b'a');
-            if entry < LETTERS {
-                PHONES[entry as usize]
-            } else { 0 }
-        };
+        let entry = (b | 32).wrapping_sub(b'a');
+        if entry <= b'z' {
+            let x = {
+                if entry < LETTERS {
+                    PHONES[entry as usize]
+                } else { 0 }
+            };
 
-        // Collapse consecutive vowels and similar sounding consonants into one.
-        if res & 254 != x & 254 {
-            res <<= 8;
-            res |= x;
+            // Collapse consecutive vowels and similar sounding consonants into one.
+            if res & 254 != x & 254 {
+                res <<= 8;
+                res |= x;
+            }
         }
     }
 
@@ -173,8 +175,8 @@ mod tests {
     fn test_exact() {
         assert_eq!(hash("JAva"), hash("jAva"));
         assert_eq!(hash("co!mputer"), hash("computer"));
-        //assert_eq!(hash("comp-uter"), hash("computer"));
-        //assert_eq!(hash("comp@u#te?r"), hash("computer"));
+        assert_eq!(hash("comp-uter"), hash("computer"));
+        assert_eq!(hash("comp@u#te?r"), hash("computer"));
         assert_eq!(hash("java"), hash("jiva"));
         assert_eq!(hash("lal"), hash("lel"));
         assert_eq!(hash("rindom"), hash("ryndom"));
@@ -192,8 +194,8 @@ mod tests {
         assert!(hash("jesus") != hash("iesus"));
         assert!(hash("aesus") != hash("iesus"));
         assert!(hash("iesus") != hash("yesus"));
-        //assert!(hash("ripert") != hash("ropert"));
-        //assert!(hash("rupirt") != hash("ropyrt"));
+        assert!(hash("rupirt") != hash("ropert"));
+        assert!(hash("ripert") != hash("ropyrt"));
         assert!(hash("rrr") != hash("rraaaa"));
     }
 
