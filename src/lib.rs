@@ -52,6 +52,45 @@ const PHONES: [u64; LETTERS as usize] = [
     0b10010100, // z
 ];
 
+// Non ASCII-phones.
+//
+// Starts 0xDF (ß). These are all aproixmated sounds, since they can vary a lot between languages.
+const PHONES_C1: [u64; 33] = [
+    PHONES[(b's' - b'a') as usize] ^ 1, // ß
+    PHONES[(b'a' - b'a') as usize], // à
+    PHONES[(b'a' - b'a') as usize], // á
+    PHONES[(b'a' - b'a') as usize], // â
+    PHONES[(b'a' - b'a') as usize], // ã
+    PHONES[(b'e' - b'a') as usize], // ä [æ]
+    PHONES[(b'o' - b'a') as usize], // å [oː]
+    PHONES[(b'e' - b'a') as usize], // æ [æ]
+    PHONES[(b'z' - b'a') as usize] ^ 1, // ç [t͡ʃ]
+    PHONES[(b'e' - b'a') as usize], // è
+    PHONES[(b'e' - b'a') as usize], // é
+    PHONES[(b'e' - b'a') as usize], // ê
+    PHONES[(b'e' - b'a') as usize], // ë
+    PHONES[(b'i' - b'a') as usize], // ì
+    PHONES[(b'i' - b'a') as usize], // í
+    PHONES[(b'i' - b'a') as usize], // î
+    PHONES[(b'i' - b'a') as usize], // ï
+    PHONES[(b't' - b'a') as usize] ^ 8, // ð [ð̠] (represented as a non-plosive T)
+    PHONES[(b'n' - b'a') as usize] | PHONES[(b'j' - b'a') as usize], // ñ [nj] (represented as a combination of n and j)
+    PHONES[(b'o' - b'a') as usize], // ò
+    PHONES[(b'o' - b'a') as usize], // ó
+    PHONES[(b'o' - b'a') as usize], // ô
+    PHONES[(b'o' - b'a') as usize], // õ
+    PHONES[(b'o' - b'a') as usize], //) ö
+    !0, // ÷
+    PHONES[(b'o' - b'a') as usize], // ø
+    PHONES[(b'u' - b'a') as usize], // ù
+    PHONES[(b'u' - b'a') as usize], // ú
+    PHONES[(b'u' - b'a') as usize], // û
+    PHONES[(b'y' - b'a') as usize], // ü
+    PHONES[(b'y' - b'a') as usize], // ý
+    PHONES[(b't' - b'a') as usize] ^ 8, // þ [ð̠] (represented as a non-plosive T)
+    PHONES[(b'i' - b'a') as usize], // ÿ
+];
+
 /// An _injective_ phone table.
 ///
 /// The first bit (MSD) is set if it is a vowel. If so, the second bit represent, if it is close
@@ -60,22 +99,37 @@ const PHONES: [u64; LETTERS as usize] = [
 ///
 /// If it is a consonant, the rest of the bits are simply a right truncated version of the
 /// [`PHONES`](./const.PHONES.hmtl) table, with the LSD used as discriminant.
+///
+/// The discriminants of the vowels are chosen in the following way:
+///
+/// 1. 00000001 (double each time)
+/// 2. 00000010
+/// 3. 00000100
+/// 3. 00001000
+/// 4. 00010000
+/// 5. 00000011 (set the LSD and use the same pattern as above, skip the first step)
+/// 6. 00000101
+/// 7. 00001001
+/// 8. 00010001
+/// 9. 00000110 (use 2 to mark the next section)
+/// 10. 00001010
+/// 11. 00010010
 const INJECTIVE_PHONES: [u64; LETTERS as usize] = [
-    0b11100000, // a
+    0b10100000, // a
     0b00100100, // b
     0b00000110, // c
     0b00001100, // d
-    0b11100001, // e
+    0b11100000, // e
     0b00100010, // f
     0b00000100, // g
     0b00000010, // h
-    0b11000000, // i
+    0b11100001, // i
     0b00000011, // j
     0b00000101, // k
     0b01010000, // l
     0b00000001, // m
     0b00001001, // n
-    0b10100000, // o
+    0b10000000, // o
     0b00100101, // p
     0b01010100, // q
     0b01010001, // r
@@ -88,6 +142,46 @@ const INJECTIVE_PHONES: [u64; LETTERS as usize] = [
     0b11100010, // y
     0b01001010, // z
 ];
+
+/// Non-ASCII injective phone table.
+///
+/// Starting at C1.
+const INJECTIVE_PHONES_C1: [u64; 33] = [
+    INJECTIVE_PHONES[(b's' - b'a') as usize] ^ 1, // ß
+    INJECTIVE_PHONES[(b'a' - b'a') as usize] ^ 2, // à
+    INJECTIVE_PHONES[(b'a' - b'a') as usize] ^ 4, // á
+    INJECTIVE_PHONES[(b'a' - b'a') as usize] ^ 8, // â
+    INJECTIVE_PHONES[(b'a' - b'a') as usize] ^ 16, // ã
+    INJECTIVE_PHONES[(b'e' - b'a') as usize] ^ 4, // ä [æ]
+    INJECTIVE_PHONES[(b'o' - b'a') as usize] ^ 1, // å [oː]
+    INJECTIVE_PHONES[(b'e' - b'a') as usize] ^ 8, // æ [æ]
+    INJECTIVE_PHONES[(b'z' - b'a') as usize] ^ 1, // ç [t͡ʃ]
+    INJECTIVE_PHONES[(b'e' - b'a') as usize] ^ 16, // è
+    INJECTIVE_PHONES[(b'e' - b'a') as usize] ^ 3, // é
+    INJECTIVE_PHONES[(b'e' - b'a') as usize] ^ 5, // ê
+    INJECTIVE_PHONES[(b'e' - b'a') as usize] ^ 7, // ë
+    INJECTIVE_PHONES[(b'i' - b'a') as usize] ^ 17, // ì
+    INJECTIVE_PHONES[(b'i' - b'a') as usize] ^ 6, // í
+    INJECTIVE_PHONES[(b'i' - b'a') as usize] ^ 10, // î
+    INJECTIVE_PHONES[(b'i' - b'a') as usize] ^ 18, // ï
+    INJECTIVE_PHONES[(b't' - b'a') as usize] ^ 4, // ð [ð̠] (represented as a non-plosive T)
+    INJECTIVE_PHONES[(b'n' - b'a') as usize] | INJECTIVE_PHONES[(b'j' - b'a') as usize], // ñ [nj] (represented as a combination of n and j)
+    INJECTIVE_PHONES[(b'o' - b'a') as usize] ^ 1, // ò
+    INJECTIVE_PHONES[(b'o' - b'a') as usize] ^ 2, // ó
+    INJECTIVE_PHONES[(b'o' - b'a') as usize] ^ 4, // ô
+    INJECTIVE_PHONES[(b'o' - b'a') as usize] ^ 8, // õ
+    INJECTIVE_PHONES[(b'o' - b'a') as usize] ^ 16, //) ö
+    !0, // ÷
+    INJECTIVE_PHONES[(b'o' - b'a') as usize] ^ 3, // ø
+    INJECTIVE_PHONES[(b'u' - b'a') as usize] ^ 1, // ù
+    INJECTIVE_PHONES[(b'u' - b'a') as usize] ^ 2, // ú
+    INJECTIVE_PHONES[(b'u' - b'a') as usize] ^ 4, // û
+    INJECTIVE_PHONES[(b'y' - b'a') as usize] ^ 12, // ü
+    INJECTIVE_PHONES[(b'y' - b'a') as usize] ^ 20, // ý
+    INJECTIVE_PHONES[(b't' - b'a') as usize] ^ 4, // þ [ð̠] (represented as a non-plosive T)
+    INJECTIVE_PHONES[(b'i' - b'a') as usize] ^ 24, // ÿ
+];
+
 
 /// Number of letters in our phone map.
 const LETTERS: u8 =  26;
@@ -112,29 +206,41 @@ const LETTERS: u8 =  26;
 /// influential to the hash.
 ///
 /// Case has no effect.
-pub fn hash(s: &str) -> u64 {
-    let mut bytes = s.bytes();
-    let first_byte = bytes.next().map_or(0, |b| {
-        let entry = (b | 32).wrapping_sub(b'a');
+pub fn hash(string: &str) -> u64 {
+    let first_byte = {
+        let entry = (string.as_bytes().get(0).map_or(0, |&x| x) | 32).wrapping_sub(b'a');
         if entry < LETTERS {
             INJECTIVE_PHONES[entry as usize]
-        } else { 0 }
-    });
+        } else if entry >= 0xDF && entry < 0xFF {
+            INJECTIVE_PHONES_C1[(entry - 0xDF) as usize]
+        } else { return 0 }
+    };
     let mut res = 0;
+    let mut n = 1u8;
+    let mut b = 0;
 
-    for b in bytes {
-        let entry = (b | 32).wrapping_sub(b'a');
+    loop {
+        b += 1;
+        // Detect overflows into the first slot.
+        if (n == 0) | (b == string.len()) {
+            break;
+        }
+
+        let entry = (string.as_bytes()[b] | 32).wrapping_sub(b'a');
         if entry <= b'z' {
-            let x = {
-                if entry < LETTERS {
-                    PHONES[entry as usize]
-                } else { 0 }
-            };
+            let x = if entry < LETTERS {
+                PHONES[entry as usize]
+            } else if entry >= 0xDF && entry < 0xFF {
+                PHONES_C1[(entry - 0xDF) as usize]
+            } else { continue };
 
             // Collapse consecutive vowels and similar sounding consonants into one.
             if res & 254 != x & 254 {
                 res <<= 8;
                 res |= x;
+                // Bit shifting is slightly faster than addition on certain (especially older)
+                // microprocessors.  Is this premature optimization? Yes, yes it is.
+                n <<= 1;
             }
         }
     }
@@ -197,6 +303,7 @@ mod tests {
         assert!(hash("rupirt") != hash("ropert"));
         assert!(hash("ripert") != hash("ropyrt"));
         assert!(hash("rrr") != hash("rraaaa"));
+        assert!(hash("randomal") != hash("randomai"));
     }
 
     #[test]
@@ -228,7 +335,10 @@ mod tests {
         assert!(similar("lol", "lulz"));
         assert!(similar("goth", "god"));
         assert!(similar("maier", "meyer"));
-        //assert!(similar("schmid", "schmidt"));
+        assert!(similar("möier", "meyer"));
+        assert!(similar("fümlaut", "fymlaut"));
+        //assert!(similar("ümlaut", "ymlaut"));
+        assert!(distance("schmid", "schmidt").count_ones() < 14);
 
         // Not similar.
         assert!(!similar("youtube", "reddit"));
