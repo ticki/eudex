@@ -93,53 +93,47 @@ const PHONES_C1: [u64; 33] = [
 
 /// An _injective_ phone table.
 ///
-/// The first bit (MSD) is set if it is a vowel. If so, the second bit represent, if it is close
-/// or not, and the third is set, if it is a front vowel. The rest of the digits are used as
-/// discriminants.
+/// The table is derived the following way:
+///
+/// | Position | Modifier | Property (vowel)    | Property (consonant)                              |
+/// |----------|---------:|---------------------|---------------------------------------------------|
+/// | 1        | 1        | Discriminant        | (property 2 from the phone table) or discriminant |
+/// | 4        | 8        | Is it open-mid?     | (property 3 from the phone table)                 |
+/// | 2        | 2        | Is it central?      | (property 4 from the phone table)                 |
+/// | 5        | 16       | Is it close-mid?    | (property 5 from the phone table)                 |
+/// | 3        | 4        | Is it front?        | (property 6 from the phone table)                 |
+/// | 6        | 32       | Is it close?        | (property 7 from the phone table)                 |
+/// | 7        | 64       | More close than [ɜ] | (property 8 from the phone table)                 |
+/// | 8        | 128      | Vowel?                                                                  |
 ///
 /// If it is a consonant, the rest of the bits are simply a right truncated version of the
-/// [`PHONES`](./const.PHONES.hmtl) table, with the LSD used as discriminant.
-///
-/// The discriminants of the vowels are chosen in the following way:
-///
-/// 1. 00000001 (double each time)
-/// 2. 00000010
-/// 3. 00000100
-/// 3. 00001000
-/// 4. 00010000
-/// 5. 00000011 (set the LSD and use the same pattern as above, skip the first step)
-/// 6. 00000101
-/// 7. 00001001
-/// 8. 00010001
-/// 9. 00000110 (use 2 to mark the next section)
-/// 10. 00001010
-/// 11. 00010010
+/// [`PHONES`](./const.PHONES.html) table, with the LSD used as discriminant.
 const INJECTIVE_PHONES: [u64; LETTERS as usize] = [
-    0b10100000, // a
+    0b10000110, // a
     0b00100100, // b
     0b00000110, // c
     0b00001100, // d
-    0b11100000, // e
+    0b11011100, // e
     0b00100010, // f
     0b00000100, // g
     0b00000010, // h
-    0b11100001, // i
+    0b11111000, // i
     0b00000011, // j
     0b00000101, // k
     0b01010000, // l
     0b00000001, // m
     0b00001001, // n
-    0b10000000, // o
+    0b11001100, // o
     0b00100101, // p
     0b01010100, // q
     0b01010001, // r
     0b00001010, // s
     0b00001110, // t
-    0b11000001, // u
+    0b11100000, // u
     0b00100011, // v
     0b00000000, // w
     0b01000010, // x
-    0b11100010, // y
+    0b11100100, // y
     0b01001010, // z
 ];
 
