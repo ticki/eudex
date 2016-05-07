@@ -85,14 +85,14 @@ const PHONES_C1: [u64; LETTERS_C1 as usize] = [
     1, // î
     1, // ï
     0b00010101, // ð [ð̠] (represented as a non-plosive T)
-    PHONES[(b'n' - b'a') as usize] | PHONES[(b'j' - b'a') as usize], // ñ [nj] (represented as a combination of n and j)
+    0b00010111, // ñ [nj] (represented as a combination of n and j)
     0, // ò
     0, // ó
     0, // ô
     0, // õ
-    1, // ö
+    1, // ö [ø]
     !0, // ÷
-    1, // ø
+    1, // ø [ø]
     1, // ù
     1, // ú
     1, // û
@@ -109,10 +109,10 @@ const PHONES_C1: [u64; LETTERS_C1 as usize] = [
 /// | Position | Modifier | Property (vowel)    | Property (consonant)                              |
 /// |----------|---------:|---------------------|---------------------------------------------------|
 /// | 1        | 1        | Discriminant        | (property 2 from the phone table) or discriminant |
-/// | 4        | 8        | Is it open-mid?     | (property 3 from the phone table)                 |
-/// | 2        | 2        | Is it central?      | (property 4 from the phone table)                 |
-/// | 5        | 16       | Is it close-mid?    | (property 5 from the phone table)                 |
-/// | 3        | 4        | Is it front?        | (property 6 from the phone table)                 |
+/// | 2        | 2        | Is it open-mid?     | (property 3 from the phone table)                 |
+/// | 3        | 4        | Is it central?      | (property 4 from the phone table)                 |
+/// | 4        | 8        | Is it close-mid?    | (property 5 from the phone table)                 |
+/// | 5        | 16       | Is it front?        | (property 6 from the phone table)                 |
 /// | 6        | 32       | Is it close?        | (property 7 from the phone table)                 |
 /// | 7        | 64       | More close than [ɜ] | (property 8 from the phone table)                 |
 /// | 8        | 128      | Vowel?                                                                  |
@@ -178,11 +178,11 @@ const INJECTIVE_PHONES_C1: [u64; LETTERS_C1 as usize] = [
     0b10100110, // ä [æ]
     0b11000010, // å [oː]
     0b10100111, // æ [æ]
-    0b01010100,// ç [t͡ʃ]
+    0b01010100, // ç [t͡ʃ]
     INJECTIVE_PHONES[(b'e' - b'a') as usize] ^ 1, // è
     INJECTIVE_PHONES[(b'e' - b'a') as usize] ^ 1, // é
     INJECTIVE_PHONES[(b'e' - b'a') as usize] ^ 1, // ê
-    0b11000110, // ë
+    0b11000110, // ë [ə] or [œ]
     INJECTIVE_PHONES[(b'i' - b'a') as usize] ^ 1, // ì
     INJECTIVE_PHONES[(b'i' - b'a') as usize] ^ 1, // í
     INJECTIVE_PHONES[(b'i' - b'a') as usize] ^ 1, // î
