@@ -66,7 +66,7 @@ const PHONES: [u64; LETTERS as usize] = [
 // Non ASCII-phones.
 //
 // Starts 0xDF (ß). These are all aproixmated sounds, since they can vary a lot between languages.
-const PHONES_C1: [u64; 33] = [
+const PHONES_C1: [u64; LETTERS_C1 as usize] = [
     PHONES[(b's' - b'a') as usize] ^ 1, // ß
     0, // à
     0, // á
@@ -160,7 +160,7 @@ const INJECTIVE_PHONES: [u64; LETTERS as usize] = [
 /// Non-ASCII injective phone table.
 ///
 /// Starting at C1.
-const INJECTIVE_PHONES_C1: [u64; 33] = [
+const INJECTIVE_PHONES_C1: [u64; LETTERS_C1 as usize] = [
     INJECTIVE_PHONES[(b's' - b'a') as usize] ^ 1, // ß
     INJECTIVE_PHONES[(b'a' - b'a') as usize] ^ 1, // à
     INJECTIVE_PHONES[(b'a' - b'a') as usize] ^ 1, // á
@@ -208,6 +208,8 @@ const INJECTIVE_PHONES_C1: [u64; 33] = [
 
 /// Number of letters in our phone map.
 const LETTERS: u8 =  26;
+/// Number of letters in our C1 phone map.
+const LETTERS_C1: u8 =  33;
 
 /// Phonetically hash this string.
 ///
@@ -232,22 +234,24 @@ const LETTERS: u8 =  26;
 pub fn hash(string: &str) -> u64 {
     let string = string.as_bytes();
 
+    let mut b = 0;
     let first_byte = {
         let entry = (string.get(0).map_or(0, |&x| x) | 32).wrapping_sub(b'a');
         if entry < LETTERS {
             INJECTIVE_PHONES[entry as usize]
         } else if entry >= 0xDF && entry < 0xFF {
             INJECTIVE_PHONES_C1[(entry - 0xDF) as usize]
-        } else { return 0 }
+        } else {
+            0
+        }
     };
     let mut res = 0;
     let mut n = 1u8;
-    let mut b = 0;
 
     loop {
         b += 1;
         // Detect overflows into the first slot.
-        if (n == 0) | (b == string.len()) {
+        if (n == 0) | (b >= string.len()) {
             break;
         }
 
