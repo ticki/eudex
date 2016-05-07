@@ -167,6 +167,16 @@ So our final ASCII letter table for the trailing phones looks like:
 
 Now, we extend our table to C1 characters by the same method:
 ```
+                (for consonants)
+      +--------- Confident
+      |+-------- Labial
+      ||+------- Liquid
+      |||+------ Dental
+      ||||+----- Plosive
+      |||||+---- Fricative
+      ||||||+--- Nasal
+      |||||||+-- Discriminant
+      ||||||||
    ß  -----s-1  (use 's' from the table above with the last bit flipped)
    à  00000000
    á  00000000
@@ -200,6 +210,8 @@ Now, we extend our table to C1 characters by the same method:
    ý  00000001
    þ  -----ð--  [ð̠]   (represented as a non-plosive T)
    ÿ  00000001
+             |  (for vowels)
+             +-- Close
 ```
 
 So far we have considered the trailing phones, now we need to look into the
@@ -355,10 +367,9 @@ likely to misspell later characters, than the first ones.
 
 For this reason, we use weighted Hamming distance:
 
-```
-Byte:    1    2    3    4    5    6    7    8
-Weight:  128  64   32   16   8    4    2    1
-```
+| Byte:   |   1 |   2  |   3  |   4  |  5  |  6  | 7  | 8 |
+|:--------|----:|-----:|-----:|-----:|----:|----:|---:|--:|
+| Weight: | 128 |  64  |  32  |  16  |  8  |  4  | 2  | 1 |
 
 Namely, we XOR the two values and then add each of the bytes' Hamming weight,
 using the coefficients from the table above.
