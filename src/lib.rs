@@ -248,7 +248,7 @@ pub fn hash(string: &str) -> u64 {
     loop {
         b += 1;
         // Detect overflows into the first slot.
-        if (n == 0) | (b >= string.len()) {
+        if n == 0 || b >= string.len() {
             break;
         }
 
@@ -278,7 +278,7 @@ pub fn hash(string: &str) -> u64 {
 ///
 /// This metric is a slightly modification of Hamming distance of the two Eudex hashes, such that
 /// each byte carries different weight.
-pub fn distance(a: &str, b: &str) -> u64 {
+pub fn distance(a: &str, b: &str) -> u32 {
     let dist = hash(a) ^ hash(b);
 
     (dist as u8).count_ones() as u32
