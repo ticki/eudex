@@ -1,5 +1,3 @@
-#![feature(static_recursion)]
-
 //! Eudex is a Soundex-esque phonetic reduction/hashing algorithm, providing locality sensitive
 //! "hashes" of words, based on the spelling and pronunciation.
 
@@ -219,9 +217,8 @@ const LETTERS_C1: u8 =  33;
 /// necessarily be mapped to the same, but will map to nearby values (nearby in this case means the
 /// XOR having a low Hamming weight).
 ///
-/// This is two orders of magnitude faster than Soundex, and several orders of magnitude faster
-/// than Levenshtein distance, making it feasible to run on large sets of strings in very short
-/// time.
+/// This is an order of magnitude faster than Soundex, and several orders of magnitude faster than
+/// Levenshtein distance, making it feasible to run on large sets of strings in very short time.
 ///
 /// Each byte in the string will be mapped to a value from a table, such that similarly sounding
 /// characters have many overlapping bits. This way you ensure that strings sounding alike will be
@@ -279,26 +276,10 @@ pub fn hash(string: &str) -> u64 {
 
 /// Calculate the Eudex distance between two words.
 ///
-/// This metric will only measure the bitwise distance between two strings, which is a XOR-like
-/// metric, making it unfit for certain purposes.  Generally speaking, the lower this is, the more
-/// similar are the two words, although each byte carries different weight (the first one carries
-/// the most, and the following's weights are simply half the weight of the previous byte).
-///
-/// # Example
-///
-/// ```rust
-/// let distance = eudex::distance("write", "right").count_ones();
-/// // Hamming weight of the Eudex distance gives a "smoother" word metric.
-///
-/// assert_eq!(distance, 15);
-/// ```
+/// This metric is a slightly modification of Hamming distance of the two Eudex hashes, such that
+/// each byte carries different weight.
 pub fn distance(a: &str, b: &str) -> u64 {
-    hash(a) ^ hash(b)
-}
-
-/// Check if two sentences sound "similar".
-pub fn similar(a: &str, b: &str) -> bool {
-    let dist = distance(a, b);
+    let dist = hash(a) ^ hash(b);
 
     (dist as u8).count_ones() as u32
         + ((dist >> 8 ) as u8).count_ones() as u32 * 2
@@ -307,7 +288,12 @@ pub fn similar(a: &str, b: &str) -> bool {
         + ((dist >> 32) as u8).count_ones() as u32 * 16
         + ((dist >> 40) as u8).count_ones() as u32 * 32
         + ((dist >> 48) as u8).count_ones() as u32 * 64
-        + ((dist >> 56) as u8).count_ones() as u32 * 128 < 10
+        + ((dist >> 56) as u8).count_ones() as u32 * 128
+}
+
+/// Check if two sentences sound "similar".
+pub fn similar(a: &str, b: &str) -> bool {
+    distance(a, b) < 10
 }
 
 #[cfg(test)]
@@ -350,7 +336,7 @@ mod tests {
         assert!(distance("bannana", "panana") >= distance("apple", "abple"));
         //assert!(distance("franco", "sranco") < distance("unicode", "ASCII"));
         assert!(distance("trump", "drumpf") < distance("gangam", "style"));
-        assert!(distance("right", "write").count_zeros() > distance("write", "abdominohysterotomy").count_zeros());
+        assert_eq!(distance("redox", "linux").count_zeros(), 2);
     }
 
     #[test]
