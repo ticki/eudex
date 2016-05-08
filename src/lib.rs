@@ -251,7 +251,7 @@ pub fn hash(string: &str) -> u64 {
     loop {
         b += 1;
         // Detect overflows into the first slot.
-        if (n == 0) | (b >= string.len()) {
+        if n == 0 || b >= string.len() {
             break;
         }
 
