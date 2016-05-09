@@ -1,9 +1,13 @@
+#![deny(missing_docs)]
+
 //! Eudex is a Soundex-esque phonetic reduction/hashing algorithm, providing locality sensitive
 //! "hashes" of words, based on the spelling and pronunciation.
 
 #![cfg_attr(test, feature(test))]
 #[cfg(test)]
 extern crate test;
+
+use std::ops;
 
 /// The sound table.
 ///
@@ -209,91 +213,178 @@ const LETTERS: u8 =  26;
 /// Number of letters in our C1 phone map.
 const LETTERS_C1: u8 =  33;
 
-/// Phonetically hash this string.
+/// A phonetic hash.
 ///
-/// This hashing function is based upon a phonetic reduction algorithm, and is locality sensitive.
-///
-/// This will map the string a Soundex-esque value, although to similar sounding strings will not
-/// necessarily be mapped to the same, but will map to nearby values (nearby in this case means the
-/// XOR having a low Hamming weight).
-///
-/// This is an order of magnitude faster than Soundex, and several orders of magnitude faster than
-/// Levenshtein distance, making it feasible to run on large sets of strings in very short time.
-///
-/// Each byte in the string will be mapped to a value from a table, such that similarly sounding
-/// characters have many overlapping bits. This way you ensure that strings sounding alike will be
-/// mapped nearby each other. Vowels and duplicates will be skipped.
-///
-/// The first byte, however, is skipped and left in the most significant place, making it most
-/// influential to the hash.
-///
-/// Case has no effect.
-pub fn hash(string: &str) -> u64 {
-    let string = string.as_bytes();
+/// Using the `Sub` implementation of the hashes will give you the difference.
+#[derive(Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Debug)]
+pub struct Hash {
+    hash: u64,
+}
 
-    let mut b = 0;
-    let first_byte = {
-        let entry = (string.get(0).map_or(0, |&x| x) | 32).wrapping_sub(b'a');
-        if entry < LETTERS {
-            INJECTIVE_PHONES[entry as usize]
-        } else if entry >= 0xDF && entry < 0xFF {
-            INJECTIVE_PHONES_C1[(entry - 0xDF) as usize]
-        } else {
-            0
-        }
-    };
-    let mut res = 0;
-    let mut n = 1u8;
+impl Hash {
+    /// Phonetically hash this string.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use eudex::Hash;
+    ///
+    /// println!("{:?}", Hash::new("lulz"));
+    /// ```
+    #[inline]
+    pub fn new(string: &str) -> Hash {
+        let string = string.as_bytes();
 
-    loop {
-        b += 1;
-        // Detect overflows into the first slot.
-        if n == 0 || b >= string.len() {
-            break;
-        }
-
-        let entry = (string[b] | 32).wrapping_sub(b'a');
-        if entry <= b'z' {
-            let x = if entry < LETTERS {
-                PHONES[entry as usize]
+        let mut b = 0;
+        let first_byte = {
+            let entry = (string.get(0).map_or(0, |&x| x) | 32).wrapping_sub(b'a');
+            if entry < LETTERS {
+                INJECTIVE_PHONES[entry as usize]
             } else if entry >= 0xDF && entry < 0xFF {
-                PHONES_C1[(entry - 0xDF) as usize]
-            } else { continue };
+                INJECTIVE_PHONES_C1[(entry - 0xDF) as usize]
+            } else {
+                0
+            }
+        };
+        let mut res = 0;
+        let mut n = 1u8;
 
-            // Collapse consecutive vowels and similar sounding consonants into one.
-            if res & 254 != x & 254 {
-                res <<= 8;
-                res |= x;
-                // Bit shifting is slightly faster than addition on certain (especially older)
-                // microprocessors.  Is this premature optimization? Yes, yes it is.
-                n <<= 1;
+        loop {
+            b += 1;
+            // Detect overflows into the first slot.
+            if n == 0 || b >= string.len() {
+                break;
+            }
+
+            let entry = (string[b] | 32).wrapping_sub(b'a');
+            if entry <= b'z' {
+                let x = if entry < LETTERS {
+                    PHONES[entry as usize]
+                } else if entry >= 0xDF && entry < 0xFF {
+                    PHONES_C1[(entry - 0xDF) as usize]
+                } else { continue };
+
+                // Collapse consecutive vowels and similar sounding consonants into one.
+                if res & 254 != x & 254 {
+                    res <<= 8;
+                    res |= x;
+                    // Bit shifting is slightly faster than addition on certain (especially older)
+                    // microprocessors.  Is this premature optimization? Yes, yes it is.
+                    n <<= 1;
+                }
             }
         }
+
+        Hash {
+            hash: res | (first_byte << 56),
+        }
+    }
+}
+
+/// Get the inner hash value.
+impl Into<u64> for Hash {
+    #[inline]
+    fn into(self) -> u64 {
+        self.hash
+    }
+}
+
+/// Calculate the difference of two hashes.
+impl ops::Sub for Hash {
+    type Output = Difference;
+
+    #[inline]
+    fn sub(self, rhs: Hash) -> Difference {
+        Difference {
+            xor: self.hash ^ rhs.hash,
+        }
+    }
+}
+
+/// The difference between two words.
+#[derive(Copy, Clone)]
+pub struct Difference {
+    xor: u64,
+}
+
+impl Difference {
+    /// The "graduated" distance.
+    ///
+    /// This will assign different weights to each of the bytes Hamming weight and simply add it.
+    /// For most use cases, this metric is the preferred one.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use eudex::Hash;
+    ///
+    /// println!("{}", (Hash::new("lulz") - Hash::new("lol")).dist());
+    /// ```
+    #[inline]
+    pub fn dist(self) -> u32 {
+        (self.xor as u8).count_ones() as u32
+            + ((self.xor >> 8 ) as u8).count_ones() as u32 * 2
+            + ((self.xor >> 16) as u8).count_ones() as u32 * 4
+            + ((self.xor >> 24) as u8).count_ones() as u32 * 8
+            + ((self.xor >> 32) as u8).count_ones() as u32 * 16
+            + ((self.xor >> 40) as u8).count_ones() as u32 * 32
+            + ((self.xor >> 48) as u8).count_ones() as u32 * 64
+            + ((self.xor >> 56) as u8).count_ones() as u32 * 128
     }
 
-    res | (first_byte << 56)
+    /// The XOR distance.
+    ///
+    /// This is generally not recommend unless you have a very specific reason to prefer it over
+    /// the other methods provided.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use eudex::Hash;
+    ///
+    /// println!("{}", (Hash::new("hello") - Hash::new("hellou")).xor())
+    /// ```
+    #[inline]
+    pub fn xor(self) -> u64 {
+        self.xor
+    }
+
+    /// The "flat" Hamming based distance.
+    ///
+    /// This will let every byte carry the same weight, such that mismatch in the early and later
+    /// mismatch counts the same.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use eudex::Hash;
+    ///
+    /// println!("{}", (Hash::new("hello") - Hash::new("hellou")).hamming())
+    /// ```
+    #[inline]
+    pub fn hamming(self) -> u32 {
+        self.xor.count_ones()
+    }
+
+    /// Does this difference constitute similarity?
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use eudex::Hash;
+    ///
+    /// assert!((Hash::new("hello") - Hash::new("hellou")).similar())
+    /// ```
+    #[inline]
+    pub fn similar(self) -> bool {
+        self.dist() < 10
+    }
 }
 
-/// Calculate the Eudex distance between two words.
-///
-/// This metric is a slightly modification of Hamming distance of the two Eudex hashes, such that
-/// each byte carries different weight.
-pub fn distance(a: &str, b: &str) -> u32 {
-    let dist = hash(a) ^ hash(b);
-
-    (dist as u8).count_ones() as u32
-        + ((dist >> 8 ) as u8).count_ones() as u32 * 2
-        + ((dist >> 16) as u8).count_ones() as u32 * 4
-        + ((dist >> 24) as u8).count_ones() as u32 * 8
-        + ((dist >> 32) as u8).count_ones() as u32 * 16
-        + ((dist >> 40) as u8).count_ones() as u32 * 32
-        + ((dist >> 48) as u8).count_ones() as u32 * 64
-        + ((dist >> 56) as u8).count_ones() as u32 * 128
-}
-
-/// Check if two sentences sound "similar".
+/// Deprecated, do not use.
+#[deprecated]
 pub fn similar(a: &str, b: &str) -> bool {
-    distance(a, b) < 10
+    (Hash::new(a) - Hash::new(b)).similar()
 }
 
 #[cfg(test)]
@@ -303,76 +394,75 @@ mod tests {
 
     #[test]
     fn test_exact() {
-        assert_eq!(hash("JAva"), hash("jAva"));
-        assert_eq!(hash("co!mputer"), hash("computer"));
-        assert_eq!(hash("comp-uter"), hash("computer"));
-        assert_eq!(hash("comp@u#te?r"), hash("computer"));
-        assert_eq!(hash("java"), hash("jiva"));
-        assert_eq!(hash("lal"), hash("lel"));
-        assert_eq!(hash("rindom"), hash("ryndom"));
-        assert_eq!(hash("riiiindom"), hash("ryyyyyndom"));
-        assert_eq!(hash("riyiyiiindom"), hash("ryyyyyndom"));
-        assert_eq!(hash("triggered"), hash("TRIGGERED"));
-        assert_eq!(hash("repert"), hash("ropert"));
+        assert_eq!(Hash::new("JAva"), Hash::new("jAva"));
+        assert_eq!(Hash::new("co!mputer"), Hash::new("computer"));
+        assert_eq!(Hash::new("comp-uter"), Hash::new("computer"));
+        assert_eq!(Hash::new("comp@u#te?r"), Hash::new("computer"));
+        assert_eq!(Hash::new("java"), Hash::new("jiva"));
+        assert_eq!(Hash::new("lal"), Hash::new("lel"));
+        assert_eq!(Hash::new("rindom"), Hash::new("ryndom"));
+        assert_eq!(Hash::new("riiiindom"), Hash::new("ryyyyyndom"));
+        assert_eq!(Hash::new("riyiyiiindom"), Hash::new("ryyyyyndom"));
+        assert_eq!(Hash::new("triggered"), Hash::new("TRIGGERED"));
+        assert_eq!(Hash::new("repert"), Hash::new("ropert"));
     }
 
     #[test]
     fn test_mismatch() {
-        assert!(hash("reddit") != hash("eddit"));
-        assert!(hash("lol") != hash("lulz"));
-        assert!(hash("ijava") != hash("java"));
-        assert!(hash("jesus") != hash("iesus"));
-        assert!(hash("aesus") != hash("iesus"));
-        assert!(hash("iesus") != hash("yesus"));
-        assert!(hash("rupirt") != hash("ropert"));
-        assert!(hash("ripert") != hash("ropyrt"));
-        assert!(hash("rrr") != hash("rraaaa"));
-        assert!(hash("randomal") != hash("randomai"));
+        assert!(Hash::new("reddit") != Hash::new("eddit"));
+        assert!(Hash::new("lol") != Hash::new("lulz"));
+        assert!(Hash::new("ijava") != Hash::new("java"));
+        assert!(Hash::new("jesus") != Hash::new("iesus"));
+        assert!(Hash::new("aesus") != Hash::new("iesus"));
+        assert!(Hash::new("iesus") != Hash::new("yesus"));
+        assert!(Hash::new("rupirt") != Hash::new("ropert"));
+        assert!(Hash::new("ripert") != Hash::new("ropyrt"));
+        assert!(Hash::new("rrr") != Hash::new("rraaaa"));
+        assert!(Hash::new("randomal") != Hash::new("randomai"));
     }
 
     #[test]
     fn test_distance() {
-        assert!(distance("lizzard", "wizzard") > distance("rick", "rolled"));
-        assert!(distance("bannana", "panana") >= distance("apple", "abple"));
-        //assert!(distance("franco", "sranco") < distance("unicode", "ASCII"));
-        assert!(distance("trump", "drumpf") < distance("gangam", "style"));
-        assert_eq!(distance("redox", "linux").count_zeros(), 2);
+        assert!((Hash::new("lizzard") - Hash::new("wizzard")).dist() > (Hash::new("rick") - Hash::new("rolled")).dist());
+        assert!((Hash::new("bannana") - Hash::new("panana")).dist() >= (Hash::new("apple") - Hash::new("abple")).dist());
+        //assert!((Hash::new("franco") - Hash::new("sranco")).dist() < (Hash::new("unicode") - Hash::new("ASCII")).dist());
+        assert!((Hash::new("trump") - Hash::new("drumpf")).dist() < (Hash::new("gangam") - Hash::new("style")).dist());
     }
 
     #[test]
     fn test_reflexivity() {
-        assert_eq!(distance("a", "b"), distance("b", "a"));
-        assert_eq!(distance("youtube", "facebook"), distance("facebook", "youtube"));
-        assert_eq!(distance("Rust", "Go"), distance("Go", "Rust"));
-        assert_eq!(distance("rick", "rolled"), distance("rolled", "rick"));
+        assert_eq!((Hash::new("a") - Hash::new("b")).dist(), (Hash::new("b") - Hash::new("a")).dist());
+        assert_eq!((Hash::new("youtube") - Hash::new("facebook")).dist(), (Hash::new("facebook") - Hash::new("youtube")).dist());
+        assert_eq!((Hash::new("Rust") - Hash::new("Go")).dist(), (Hash::new("Go") - Hash::new("Rust")).dist());
+        assert_eq!((Hash::new("rick") - Hash::new("rolled")).dist(), (Hash::new("rolled") - Hash::new("rick")).dist());
     }
 
     #[test]
     fn test_similar() {
         // Similar.
-        assert!(similar("yay", "yuy"));
-        assert!(distance("crack", "crakk").count_ones() < 10);
-        assert!(similar("what", "wat"));
-        assert!(similar("jesus", "jeuses"));
-        assert!(similar("", ""));
-        assert!(similar("jumpo", "jumbo"));
-        assert!(similar("lol", "lulz"));
-        //assert!(similar("goth", "god"));
-        assert!(similar("maier", "meyer"));
-        assert!(similar("möier", "meyer"));
-        assert!(similar("fümlaut", "fymlaut"));
-        //assert!(similar("ümlaut", "ymlaut"));
-        assert!(distance("schmid", "schmidt").count_ones() < 14);
+        assert!((Hash::new("yay") - Hash::new("yuy")).similar());
+        assert!((Hash::new("crack") - Hash::new("crakk")).dist().count_ones() < 10);
+        assert!((Hash::new("what") - Hash::new("wat")).similar());
+        assert!((Hash::new("jesus") - Hash::new("jeuses")).similar());
+        assert!((Hash::new("") - Hash::new("")).similar());
+        assert!((Hash::new("jumpo") - Hash::new("jumbo")).similar());
+        assert!((Hash::new("lol") - Hash::new("lulz")).similar());
+        //assert!((Hash::new("goth") - Hash::new("god")).similar());
+        assert!((Hash::new("maier") - Hash::new("meyer")).similar());
+        assert!((Hash::new("möier") - Hash::new("meyer")).similar());
+        assert!((Hash::new("fümlaut") - Hash::new("fymlaut")).similar());
+        //assert!((Hash::new("ümlaut") - Hash::new("ymlaut")).similar());
+        assert!((Hash::new("schmid") - Hash::new("schmidt")).dist().count_ones() < 14);
 
         // Not similar.
-        assert!(!similar("youtube", "reddit"));
-        assert!(!similar("yet", "vet"));
-        assert!(!similar("hacker", "4chan"));
-        assert!(!similar("awesome", "me"));
-        assert!(!similar("prisco", "vkisco"));
-        assert!(!similar("no", "go"));
-        assert!(!similar("horse", "norse"));
-        assert!(!similar("nice", "mice"));
+        assert!(!(Hash::new("youtube") - Hash::new("reddit")).similar());
+        assert!(!(Hash::new("yet") - Hash::new("vet")).similar());
+        assert!(!(Hash::new("hacker") - Hash::new("4chan")).similar());
+        assert!(!(Hash::new("awesome") - Hash::new("me")).similar());
+        assert!(!(Hash::new("prisco") - Hash::new("vkisco")).similar());
+        assert!(!(Hash::new("no") - Hash::new("go")).similar());
+        assert!(!(Hash::new("horse") - Hash::new("norse")).similar());
+        assert!(!(Hash::new("nice") - Hash::new("mice")).similar());
     }
 
     #[bench]
@@ -387,7 +477,7 @@ mod tests {
             let mut vec = Vec::new();
 
             for i in BufReader::new(dict).lines() {
-                vec.push(hash(&i.unwrap()));
+                vec.push(Hash::new(&i.unwrap()));
             }
 
             vec

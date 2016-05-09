@@ -1,7 +1,8 @@
 # Eudex: A blazingly fast phonetic reduction/hashing algorithm.
 
-Eudex is a Soundex-esque phonetic reduction/hashing algorithm, providing
-locality sensitive "hashes" of words, based on the spelling and pronunciation.
+Eudex (_[juːˈdɛks]_) is a Soundex-esque phonetic reduction/hashing algorithm,
+providing locality sensitive "hashes" of words, based on the spelling and
+pronunciation.
 
 It is derived from the classification of the pulmonic consonants (see below).
 
@@ -11,9 +12,9 @@ large sets of strings in very short time.
 
 ## Features
 
-- High quality locality-sensitive hashing based on pronounciation.
-- Works with English, Catalan, German, Spanish, Italian, and Swedish.
-- Sophisticated phonetic mapping.
+- High quality locality-sensitive hashing based on pronunciation.  Works with
+- English, Catalan, German, Spanish, Italian, and Swedish.  Sophisticated
+- phonetic mapping.
 - Better quality than Soundex.
 - Extremely fast.
 - Algorithm specified (see the section below).
@@ -57,15 +58,22 @@ e.g. searching for spell check suggestions.
 German, Spanish, Swedish, and Italian dictionaries, and has been confirmed to
 have decent to good quality on all of them.
 
+## Implementations
+
+- Rust: this repository.
+- Java: [jprante/elasticsearch-analysis-phonetic-eudex](https://github.com/jprante/elasticsearch-analysis-phonetic-eudex)
+
 ## Example
 
 ```rust
 extern crate eudex;
 
+use eudex::Hash;
+
 fn main() {
-    assert!(eudex::similar("jumpo", "jumbo"));
-    assert!(!eudex::similar("horse", "norse"));
-    println!("{}", eudex::hash("hello"));
+    assert!((Hash::new("jumpo") - Hash::new("jumbo")).similar());
+    assert!(!(Hash::new("Horse") - Hash::new("Norse")).similar());
+    println!("{:?}", Hash::new("hello"));
 }
 ```
 
