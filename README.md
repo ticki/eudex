@@ -10,6 +10,8 @@ Eudex is about two orders of magnitude faster than Soundex, and several orders
 of magnitude faster than Levenshtein distance, making it feasible to run on
 large sets of strings in very short time.
 
+[Documentation.](http://ticki.github.io/eudex/eudex/)
+
 ## Features
 
 - High quality locality-sensitive hashing based on pronunciation.  Works with
