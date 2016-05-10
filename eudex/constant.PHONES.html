@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `PHONES` constant in crate `eudex`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, PHONES">
+
+    <title>eudex::PHONES - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='index.html'>eudex</a></p><script>window.sidebarCurrent = {name: 'PHONES', ty: 'constant', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content constant">
+<h1 class='fqn'><span class='in-band'><a href='index.html'>eudex</a>::<wbr><a class='constant' href=''>PHONES</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-4' class='srclink' href='../src/eudex/src/lib.rs.html#25-52' title='goto source code'>[src]</a></span></h1>
+<pre class='rust const'>const PHONES: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.array.html'>; LETTERS as usize]</a><code> = </code><code>[
+    0, // a
+    0b01000010, // b
+    0b00001110, // c
+    0b00000010, // d
+    0, // e
+    0b01000100, // f
+    0b00000010, // g
+    0b00001100, // h
+    0, // i
+    0b00001100, // j
+    0b00000010, // k
+    0b10100000, // l
+    0b01000001, // m
+    0b00000001, // n
+    0, // o
+    0b01000010, // p
+    0b10000010, // q
+    0b10011000, // r
+    0b00000100, // s
+    0b00000010, // t
+    0, // u
+    0b01001100, // v
+    0b00001000, // w
+    0b10000100, // x
+    0, // y
+    0b10000100, // z
+]</code></pre><div class='docblock'><p>The sound table.</p>
+
+<p>The first bit each describes a certain property of the phone:</p>
+
+<table>
+<thead>
+<tr>
+<th>Position</th>
+<th>Modifier</th>
+<th>Property</th>
+<th>Phones</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>Nasal</td>
+<td>mn</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>Plosive</td>
+<td>pbtdcgqk</td>
+</tr>
+<tr>
+<td>3</td>
+<td>4</td>
+<td>Fricative</td>
+<td>fvsjxzhc</td>
+</tr>
+<tr>
+<td>4</td>
+<td>8</td>
+<td>Approximant</td>
+<td>vrhjwc</td>
+</tr>
+<tr>
+<td>5</td>
+<td>16</td>
+<td>Trill</td>
+<td>r</td>
+</tr>
+<tr>
+<td>6</td>
+<td>32</td>
+<td>Lateral</td>
+<td>l</td>
+</tr>
+<tr>
+<td>7</td>
+<td>64</td>
+<td>Type²</td>
+<td>mpbfv</td>
+</tr>
+<tr>
+<td>8</td>
+<td>128</td>
+<td>Confident¹</td>
+<td>lrxzq</td>
+</tr>
+</tbody>
+</table>
+
+<p>¹hard to misspell.
+²1 means labial or dorsal, 0 means apical.</p>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "eudex";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

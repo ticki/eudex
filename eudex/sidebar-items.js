@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["similar","Deprecated, do not use."]],"struct":[["Difference","The difference between two words."],["Hash","A phonetic hash."]]});
