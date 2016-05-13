@@ -108,7 +108,8 @@ The crucial point here is that all the characters are mapped through a table
 carefully derived by their phonetic classification, to make similar sounding
 phones have a low Hamming distance.
 
-If two consecutive phones shares parity (i.e, a⊕1 = b), the second is skipped.
+If two consecutive phones shares all the bits, but the parity bit, (i.e, a >> 1
+= b >> 1), the second is skipped.
 
 The tables are what makes it interesting. There are four tables: one for ASCII
 letters (not characters, letters) in the first slot ('A'), one for C1 (Latin
