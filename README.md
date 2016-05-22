@@ -14,10 +14,12 @@ large sets of strings in very short time.
 
 ## Features
 
-- High quality locality-sensitive hashing based on pronunciation.  Works with
-- English, Catalan, German, Spanish, Italian, and Swedish.  Sophisticated
-- phonetic mapping.
+- High quality locality-sensitive hashing based on pronunciation.
+- Works with, but not limited to, English, Catalan, German, Spanish, Italian,
+  and Swedish.
+- Sophisticated phonetic mapping.
 - Better quality than Soundex.
+- Takes non-english letters into account.
 - Extremely fast.
 - Algorithm specified (see the section below).
 - Vowel sensitive.
@@ -59,6 +61,12 @@ e.g. searching for spell check suggestions.
 **What languages is it tested for?**  It is tested on the English, Catalan,
 German, Spanish, Swedish, and Italian dictionaries, and has been confirmed to
 have decent to good quality on all of them.
+
+**It seem to limited the hash to 8 or 16 characters?** It doesn't have such a
+limitation, however the hash will only be affected by the first N characters,
+due to platform and performance considerations. It turns out that it has little
+to no effect on the quality. Moreover, this limitation is not a part of the
+algorithm itself, but this implementation of the algorithm.
 
 ## Implementations
 

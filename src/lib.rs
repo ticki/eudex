@@ -257,7 +257,7 @@ impl Hash {
             }
 
             let entry = (string[b] | 32).wrapping_sub(b'a');
-            if entry <= b'z' {
+            if entry <= 26 {
                 let x = if entry < LETTERS {
                     PHONES[entry as usize]
                 } else if entry >= 0xDF && entry < 0xFF {
