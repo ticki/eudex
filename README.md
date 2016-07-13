@@ -72,6 +72,7 @@ algorithm itself, but this implementation of the algorithm.
 
 - Rust: this repository.
 - Java: [jprante/elasticsearch-analysis-phonetic-eudex](https://github.com/jprante/elasticsearch-analysis-phonetic-eudex)
+- JavaScript: [Yomguithereal/talisman](https://github.com/Yomguithereal/talisman/blob/master/src/phonetics/eudex.js)
 
 ## Example
 
