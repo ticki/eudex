@@ -2,5 +2,9 @@
 name = "eudex"
 version = "0.1.0"
 authors = ["ticki <ticki@users.noreply.github.com>"]
-
-[dependencies]
+description = "A blazingly fast phonetic reduction/hashing algorithm."
+repository = "https://github.com/ticki/eudex"
+documentation = "https://docs.rs/crate/eudex"
+license = "MIT"
+keywords = ["soundex", "nlp", "search", "language", "dictionary"]
+exclude = ["target", "CHANGELOG.md", "paper.tex", "Cargo.lock"]
