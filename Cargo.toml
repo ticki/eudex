@@ -1,6 +1,6 @@
 [package]
 name = "eudex"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["ticki <ticki@users.noreply.github.com>"]
 description = "A blazingly fast phonetic reduction/hashing algorithm."
 repository = "https://github.com/ticki/eudex"
