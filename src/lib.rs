@@ -18,7 +18,7 @@ mod tests;
 /// Using the `Sub` implementation of the hashes will give you the difference.
 #[derive(Copy, Clone, Hash, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub struct Hash {
-    hash: u64,
+    pub hash: u64,
 }
 
 impl Hash {
