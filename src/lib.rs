@@ -71,6 +71,14 @@ impl Into<u64> for Hash {
     }
 }
 
+/// Get a `Hash` value from its hash value.
+impl From<u64> for Hash {
+    #[inline]
+    fn from(hash: u64) -> Self {
+        Hash { hash }
+    }
+}
+
 /// Calculate the difference of two hashes.
 impl ops::Sub for Hash {
     type Output = Difference;
@@ -105,7 +113,7 @@ impl Difference {
     #[inline]
     pub fn dist(self) -> u32 {
         (self.xor as u8).count_ones() as u32
-            + ((self.xor >> 8 ) as u8).count_ones() as u32 * 2
+            + ((self.xor >> 8) as u8).count_ones() as u32 * 2
             + ((self.xor >> 16) as u8).count_ones() as u32 * 3
             + ((self.xor >> 24) as u8).count_ones() as u32 * 5
             + ((self.xor >> 32) as u8).count_ones() as u32 * 8
